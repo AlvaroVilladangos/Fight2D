@@ -9,7 +9,7 @@ c.fillRect(0, 0, canvas.width, canvas.height);
 const gravity = 0.7;
 
 class Sprite {
-  constructor({ position, velocity, color, offset}) {
+  constructor({ position, velocity, color, offset }) {
     this.position = position;
     this.velocity = velocity;
     this.width = 50;
@@ -19,14 +19,15 @@ class Sprite {
     this.attackBox = {
       position: {
         x: this.position.x,
-        y: this.position.y
+        y: this.position.y,
       },
       offset: offset,
       width: 100,
       height: 50,
-    }
-    this.color = color
+    };
+    this.color = color;
     this.isAttacking = false;
+    this.health = 100;
   }
 
   draw() {
@@ -35,13 +36,14 @@ class Sprite {
 
     //attack box
 
-    if(this.isAttacking){
+    if (this.isAttacking) {
       c.fillStyle = "yellow";
       c.fillRect(
-        this.attackBox.position.x, 
-        this.attackBox.position.y, 
-        this.attackBox.width, 
-        this.attackBox.height);
+        this.attackBox.position.x,
+        this.attackBox.position.y,
+        this.attackBox.width,
+        this.attackBox.height
+      );
     }
   }
 
@@ -52,7 +54,6 @@ class Sprite {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
 
-
     if (this.position.y + this.height + this.velocity.y >= canvas.height) {
       this.velocity.y = 0;
       this.isJumping = false;
@@ -62,11 +63,11 @@ class Sprite {
     }
   }
 
-  attack(){
+  attack() {
     this.isAttacking = true;
-    setTimeout(()=>{
+    setTimeout(() => {
       this.isAttacking = false;
-    },100) 
+    }, 100);
   }
 }
 
@@ -79,11 +80,11 @@ const player = new Sprite({
     x: 0,
     y: 0,
   },
-  color : "lightblue",
+  color: "lightblue",
   offset: {
     x: 0,
-    y:0
-  }
+    y: 0,
+  },
 });
 
 const enemy = new Sprite({
@@ -98,8 +99,8 @@ const enemy = new Sprite({
   color: "red",
   offset: {
     x: -50,
-    y:0
-  }
+    y: 0,
+  },
 });
 
 const keys = {
@@ -121,12 +122,15 @@ const keys = {
   },
 };
 
-function collisionAtaques({jugador, enemigo}){
-
-  return (jugador.attackBox.position.x + jugador.attackBox.width >= enemigo.position.x
-    && jugador.attackBox.position.x <= enemigo.position.x + enemigo.width
-    && jugador.attackBox.position.y + jugador.attackBox.height >= enemigo.position.y
-    && jugador.attackBox.position.y <= enemigo.position.y + enemigo.height)
+function collisionAtaques({ jugador, enemigo }) {
+  return (
+    jugador.attackBox.position.x + jugador.attackBox.width >=
+      enemigo.position.x &&
+    jugador.attackBox.position.x <= enemigo.position.x + enemigo.width &&
+    jugador.attackBox.position.y + jugador.attackBox.height >=
+      enemigo.position.y &&
+    jugador.attackBox.position.y <= enemigo.position.y + enemigo.height
+  );
 }
 
 function animate() {
@@ -153,15 +157,23 @@ function animate() {
   }
 
   //coque entre unidades
-  if(collisionAtaques({ jugador: player, enemigo: enemy }) && player.isAttacking) {
-      player.isAttacking = false;
-      console.log("ataco el player 1")
+  if (
+    collisionAtaques({ jugador: player, enemigo: enemy }) &&
+    player.isAttacking
+  ) {
+    player.isAttacking = false;
+    enemy.health -=20;
+    document.querySelector('#enemyHealth').style.width =  enemy.health + "%"
   }
 
-  if(collisionAtaques({ jugador: enemy, enemigo: player }) && enemy.isAttacking) {
+  if (
+    collisionAtaques({ jugador: enemy, enemigo: player }) &&
+    enemy.isAttacking
+  ) {
     enemy.isAttacking = false;
-    console.log("ataco el enemigo")
-}
+    enemy.health -=20;
+    document.querySelector('#playerHealth').style.width =  enemy.health + "%"
+  }
 }
 
 animate();
@@ -177,10 +189,9 @@ window.addEventListener("keydown", (event) => {
       player.lastKey = "a";
       break;
     case "w":
-
-        if(!player.isJumping){
-            player.velocity.y = -20;
-        }
+      if (!player.isJumping) {
+        player.velocity.y = -20;
+      }
       break;
     case " ":
       player.attack();
@@ -188,17 +199,17 @@ window.addEventListener("keydown", (event) => {
 
     //enemigo
     case "ArrowRight":
-        keys.ArrowRight.pressed = true;
-        enemy.lastKey = "ArrowRight";  
+      keys.ArrowRight.pressed = true;
+      enemy.lastKey = "ArrowRight";
       break;
     case "ArrowLeft":
       keys.ArrowLeft.pressed = true;
-      enemy.lastKey = "ArrowLeft";  
+      enemy.lastKey = "ArrowLeft";
       break;
     case "ArrowUp":
-        if(!enemy.isJumping){
-            enemy.velocity.y = -20;
-        }
+      if (!enemy.isJumping) {
+        enemy.velocity.y = -20;
+      }
       break;
     case "ArrowDown":
       enemy.attack();
@@ -230,13 +241,3 @@ window.addEventListener("keyup", (event) => {
       break;
   }
 });
-
-
-
-
-
-/* if (!jugador || !jugador.attackBox || !enemigo || !enemigo.attackBox) {
-
-  return;
-}
- */
