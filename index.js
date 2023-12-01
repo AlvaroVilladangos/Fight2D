@@ -6,19 +6,39 @@ canvas.height = 576;
 
 c.fillRect(0, 0, canvas.width, canvas.height);
 
-const gravity = 0.2;
+const gravity = 0.7;
 
 class Sprite {
-  constructor({ position, velocity }) {
+  constructor({ position, velocity, color }) {
     this.position = position;
     this.velocity = velocity;
+    this.width = 50;
     this.height = 150;
-    this.lastKey
+    this.lastKey;
+    this.isJumping = false;
+    this.attackBox = {
+      position: this.position,
+      width: 120,
+      height: 50,
+    }
+    this.color = color
+    this.isAttacking = false;
   }
 
   draw() {
-    c.fillStyle = "red";
-    c.fillRect(this.position.x, this.position.y, 50, this.height);
+    c.fillStyle = this.color;
+    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+    //attack box
+
+    if(this.isAttacking){
+      c.fillStyle = "yellow";
+      c.fillRect(
+        this.attackBox.position.x, 
+        this.attackBox.position.y, 
+        this.attackBox.width, 
+        this.attackBox.height);
+    }
   }
 
   update() {
@@ -26,11 +46,21 @@ class Sprite {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
 
+
     if (this.position.y + this.height + this.velocity.y >= canvas.height) {
       this.velocity.y = 0;
+      this.isJumping = false;
     } else {
       this.velocity.y += gravity;
+      this.isJumping = true;
     }
+  }
+
+  attack(){
+    this.isAttacking = true;
+    setTimeout(()=>{
+      this.isAttacking = false;
+    },100) 
   }
 }
 
@@ -43,6 +73,7 @@ const player = new Sprite({
     x: 0,
     y: 0,
   },
+  color : "lightblue",
 });
 
 const enemy = new Sprite({
@@ -54,6 +85,7 @@ const enemy = new Sprite({
     x: 0,
     y: 0,
   },
+  color: "red",
 });
 
 const keys = {
@@ -99,6 +131,15 @@ function animate() {
     enemy.velocity.x = 5;
   }
 
+  //coque entre unidades
+  if(player.attackBox.position.x + player.attackBox.width >= enemy.position.x
+    && player.attackBox.position.x <= enemy.position.x + enemy.width
+    && player.attackBox.position.y + player.attackBox.height >= enemy.position.y
+    && player.attackBox.position.y <= enemy.position.y + enemy.height
+    && player.isAttacking) {
+      player.isAttacking = false;
+      console.log("go")
+  }
 }
 
 animate();
@@ -114,7 +155,13 @@ window.addEventListener("keydown", (event) => {
       player.lastKey = "a";
       break;
     case "w":
-      player.velocity.y = -10;
+
+        if(!player.isJumping){
+            player.velocity.y = -20;
+        }
+      break;
+    case " ":
+      player.attack();
       break;
 
     //enemigo
@@ -127,7 +174,9 @@ window.addEventListener("keydown", (event) => {
       enemy.lastKey = "ArrowLeft";  
       break;
     case "ArrowUp":
-      enemy.velocity.y = -10;
+        if(!enemy.isJumping){
+            enemy.velocity.y = -20;
+        }
       break;
   }
 });
