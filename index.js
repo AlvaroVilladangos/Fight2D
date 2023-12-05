@@ -6,7 +6,7 @@ canvas.height = 576;
 
 c.fillRect(0, 0, canvas.width, canvas.height);
 
-const gravity = 0.7;
+const gravity = 1;
 
 const background = new Sprite({
   position: {
@@ -35,11 +35,40 @@ const player = new Fighter({
     x: 0,
     y: 0,
   },
-  color: "lightblue",
+  color: "orange",
   offset: {
     x: 0,
     y: 0,
   },
+
+  imageSrc: './Assets/samuraiMack/Idle.png',
+  scale:  2.5,
+  framesMax: 8,
+  offset: {x: 215, y: 157},
+  sprites: {
+    idle: {
+      imageSrc: './Assets/samuraiMack/Idle.png',
+      framesMax: 8,
+    },
+
+    run:{
+      imageSrc: './Assets/samuraiMack/Run.png',
+      framesMax: 8,
+    },
+
+    jump:{
+      imageSrc: './Assets/samuraiMack/Jump.png',
+      framesMax: 2,
+    },
+
+    fall:{
+      imageSrc: './Assets/samuraiMack/Fall.png',
+      framesMax: 2,
+    }
+  },
+
+  
+
 });
 
 const enemy = new Fighter({
@@ -86,15 +115,27 @@ function animate() {
   background.update();
   shop.update();
   player.update();
-  enemy.update();
-
+/*   enemy.update();
+ */
   player.velocity.x = 0;
   enemy.velocity.x = 0;
   //movimiento jugador
+  
   if (keys.a.pressed && player.lastKey === "a") {
     player.velocity.x = -5;
+    player.switchSprite('run');
   } else if (keys.d.pressed && player.lastKey === "d") {
     player.velocity.x = 5;
+    player.switchSprite('run');
+  }else{
+    player.switchSprite('idle');
+  }
+
+  //jumping
+  if (player.velocity.y < 0){
+    player.switchSprite('jump');
+  }else if(player.velocity.y > 0){
+    player.switchSprite('fall');
   }
 
   //movimiento enemigo
@@ -103,6 +144,8 @@ function animate() {
   } else if (keys.ArrowRight.pressed && enemy.lastKey === "ArrowRight") {
     enemy.velocity.x = 5;
   }
+
+
 
   //coque entre unidades
   if (
