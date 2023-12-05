@@ -11,20 +11,20 @@ const gravity = 1;
 const background = new Sprite({
   position: {
     x: 0,
-    y: 0
+    y: 0,
   },
-  imageSrc: './Assets/background.png'
-})
+  imageSrc: "./Assets/background.png",
+});
 
 const shop = new Sprite({
   position: {
     x: 650,
-    y: 160
+    y: 160,
   },
-  imageSrc: './Assets/shop.png',
+  imageSrc: "./Assets/shop.png",
   scale: 2.5,
-  framesMax: 6
-})
+  framesMax: 6,
+});
 
 const player = new Fighter({
   position: {
@@ -41,34 +41,45 @@ const player = new Fighter({
     y: 0,
   },
 
-  imageSrc: './Assets/samuraiMack/Idle.png',
-  scale:  2.5,
+  imageSrc: "./Assets/samuraiMack/Idle.png",
+  scale: 2.5,
   framesMax: 8,
-  offset: {x: 215, y: 157},
+  offset: { x: 215, y: 157 },
   sprites: {
     idle: {
-      imageSrc: './Assets/samuraiMack/Idle.png',
+      imageSrc: "./Assets/samuraiMack/Idle.png",
       framesMax: 8,
     },
 
-    run:{
-      imageSrc: './Assets/samuraiMack/Run.png',
+    run: {
+      imageSrc: "./Assets/samuraiMack/Run.png",
       framesMax: 8,
     },
 
-    jump:{
-      imageSrc: './Assets/samuraiMack/Jump.png',
+    jump: {
+      imageSrc: "./Assets/samuraiMack/Jump.png",
       framesMax: 2,
     },
 
-    fall:{
-      imageSrc: './Assets/samuraiMack/Fall.png',
+    fall: {
+      imageSrc: "./Assets/samuraiMack/Fall.png",
       framesMax: 2,
-    }
+    },
+
+    attack1: {
+      imageSrc: "./Assets/samuraiMack/Attack1.png",
+      framesMax: 6,
+    },
   },
 
-  
-
+  attackBox: {
+    offset: {
+      x: 100,
+      y: 50,
+    },
+    width: 170,
+    height: 50,
+  },
 });
 
 const enemy = new Fighter({
@@ -84,6 +95,46 @@ const enemy = new Fighter({
   offset: {
     x: -50,
     y: 0,
+  },
+
+  imageSrc: "./Assets/kenji/Idle.png",
+  scale: 2.5,
+  framesMax: 4,
+  offset: { x: 215, y: 167 },
+  sprites: {
+    idle: {
+      imageSrc: "./Assets/kenji/Idle.png",
+      framesMax: 4,
+    },
+
+    run: {
+      imageSrc: "./Assets/kenji/Run.png",
+      framesMax: 8,
+    },
+
+    jump: {
+      imageSrc: "./Assets/kenji/Jump.png",
+      framesMax: 2,
+    },
+
+    fall: {
+      imageSrc: "./Assets/kenji/Fall.png",
+      framesMax: 2,
+    },
+
+    attack1: {
+      imageSrc: "./Assets/kenji/Attack1.png",
+      framesMax: 4,
+    },
+  },
+
+  attackBox: {
+    offset: {
+      x: -165,
+      y: 50,
+    },
+    width: 170,
+    height: 50,
   },
 });
 
@@ -115,61 +166,83 @@ function animate() {
   background.update();
   shop.update();
   player.update();
-/*   enemy.update();
- */
+  enemy.update();
+
   player.velocity.x = 0;
   enemy.velocity.x = 0;
   //movimiento jugador
-  
+
   if (keys.a.pressed && player.lastKey === "a") {
     player.velocity.x = -5;
-    player.switchSprite('run');
+    player.switchSprite("run");
   } else if (keys.d.pressed && player.lastKey === "d") {
     player.velocity.x = 5;
-    player.switchSprite('run');
-  }else{
-    player.switchSprite('idle');
+    player.switchSprite("run");
+  } else {
+    player.switchSprite("idle");
   }
 
   //jumping
-  if (player.velocity.y < 0){
-    player.switchSprite('jump');
-  }else if(player.velocity.y > 0){
-    player.switchSprite('fall');
+  if (player.velocity.y < 0) {
+    player.switchSprite("jump");
+  } else if (player.velocity.y > 0) {
+    player.switchSprite("fall");
   }
 
-  //movimiento enemigo
+  //movimiento
+
   if (keys.ArrowLeft.pressed && enemy.lastKey === "ArrowLeft") {
     enemy.velocity.x = -5;
+    enemy.switchSprite("run");
   } else if (keys.ArrowRight.pressed && enemy.lastKey === "ArrowRight") {
     enemy.velocity.x = 5;
+    enemy.switchSprite("run");
+  } else {
+    enemy.switchSprite("idle");
   }
 
+  //jumping
+  if (enemy.velocity.y < 0) {
+    enemy.switchSprite("jump");
+  } else if (enemy.velocity.y > 0) {
+    enemy.switchSprite("fall");
+  }
 
-
-  //coque entre unidades
+  //choque entre unidades
   if (
     collisionAtaques({ jugador: player, enemigo: enemy }) &&
-    player.isAttacking
+    player.isAttacking && player.framesCurrent === 4
   ) {
     player.isAttacking = false;
-    enemy.health -=20;
-    document.querySelector('#enemyHealth').style.width =  enemy.health + "%"
+    enemy.health -= 20;
+    document.querySelector("#enemyHealth").style.width = enemy.health + "%";
   }
+
+  // if playere misses
+
+  if (player.isAttacking && player.framesCurrent === 4) {
+    player.isAttacking = false;
+  }
+
 
   if (
     collisionAtaques({ jugador: enemy, enemigo: player }) &&
-    enemy.isAttacking
+    enemy.isAttacking && player.framesCurrent === 2
   ) {
     enemy.isAttacking = false;
-    player.health -=20;
-    document.querySelector('#playerHealth').style.width =  player.health + "%"
+    player.health -= 15;
+    document.querySelector("#playerHealth").style.width = player.health + "%";
   }
+
+  if (enemy.isAttacking && enemy.framesCurrent === 2) {
+    enemy.isAttacking = false;
+  }
+
 
   //end gaME BASED OF HEALTH
 
-  if(enemy.health <=0 || player.health <=0){
-    determineWinner({player, enemy, timerId})
+  if (enemy.health <= 0 || player.health <= 0) {
+    determineWinner({ player, enemy, timerId });
   }
 }
 
